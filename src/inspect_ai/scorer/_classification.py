@@ -138,7 +138,9 @@ def _remove_punc(text: str) -> str:
     # from the finite-number check above — strip the boundary and re-check
     stripped = strip_punctuation(text)
     if is_finite_number(stripped):
-        return stripped
+        # a minus sign directly before the number is its sign, not punctuation
+        leading = text[: text.index(stripped)]
+        return f"-{stripped}" if leading.endswith("-") else stripped
     return "".join(ch for ch in text if ch not in string.punctuation)
 
 
@@ -154,7 +156,8 @@ def _normalize_number(text: str) -> str:
 
 
 def _tokenize(text: str) -> List[str]:
-    return re.split(" |-", text)
+    # split on hyphens, except a minus sign opening a number ("-5", "(-5)")
+    return re.split(r"\s|-(?!\.?\d)|(?<=[^\s(\[{])-", text)
 
 
 def _normalize(text: str, stop_words: list[str] | None = None) -> str:

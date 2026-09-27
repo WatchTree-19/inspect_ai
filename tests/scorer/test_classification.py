@@ -149,3 +149,26 @@ def test_max_exact_score_word_order_and_duplicates():
     # max_exact_score must preserve word order and count (not compare word sets)
     assert max_exact_score("world hello", ["hello world"]) == 0.0
     assert max_exact_score("hello hello", ["hello"]) == 0.0
+
+
+def test_negative_numbers_keep_their_sign():
+    # a leading minus is part of the number, not a hyphen or punctuation
+    assert max_exact_score("-5", ["5"]) == 0.0
+    assert max_exact_score("-5", ["-5"]) == 1.0
+    assert max_exact_score("The answer is -40", ["The answer is 40"]) == 0.0
+    assert max_exact_score("The answer is -3.5.", ["the answer is -3.5"]) == 1.0
+    assert max_exact_score("(-40)", ["40"]) == 0.0
+    assert max_exact_score("(-40)", ["-40"]) == 1.0
+    assert max_f1_score("-5", ["5"]) == 0.0
+    assert max_f1_score("x is -5", ["x is 5"]) == 0.67
+    # hyphenated words and ranges still split on the hyphen
+    assert max_exact_score("well-known", ["well known"]) == 1.0
+    assert max_exact_score("1-2", ["1 2"]) == 1.0
+    assert max_exact_score("5%-10%", ["5 10"]) == 1.0
+
+
+def test_stop_words_removed_across_newlines_and_tabs():
+    # stop words must be dropped whatever whitespace separates them
+    assert max_f1_score("Paris is", ["Paris"], stop_words=["is"]) == 1.0
+    assert max_f1_score("Paris\nis", ["Paris"], stop_words=["is"]) == 1.0
+    assert max_f1_score("Paris\tis", ["Paris"], stop_words=["is"]) == 1.0
