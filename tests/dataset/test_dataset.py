@@ -10,11 +10,13 @@ import pytest
 from pydantic import BaseModel
 from test_helpers.utils import skip_if_github_action
 
+from inspect_ai._util.answer import answer_index
 from inspect_ai._util.content import ContentImage
 from inspect_ai._util.file import exists
 from inspect_ai.dataset import (
     Dataset,
     FieldSpec,
+    MemoryDataset,
     Sample,
     csv_dataset,
     example_dataset,
@@ -265,6 +267,24 @@ def test_dataset_shuffle_choices_false_does_not_shuffle(
         type.__call__(dataset_path(file), shuffle_choices=False) for _ in range(2)
     ]
     assert dataset_1[0].choices == dataset_2[0].choices
+
+
+@pytest.mark.parametrize("target", ["B,D", "B, D", "BD", "b d"])
+def test_dataset_shuffle_choices_remaps_multi_answer_string_target(
+    target: str,
+) -> None:
+    # the choice scorer accepts several answers in one string (e.g. "B,D" from
+    # a CSV column), so shuffling must remap each of them
+    choices = ["3", "4", "7", "9"]
+    dataset = MemoryDataset(
+        [Sample(input="Which are squares?", choices=choices, target=target)]
+    )
+    dataset.shuffle_choices(seed=7)
+    sample = dataset[0]
+    assert sample.choices is not None
+    assert isinstance(sample.target, str)
+    remapped = {sample.choices[answer_index(t)] for t in sample.target.split(", ")}
+    assert remapped == {"4", "9"}
 
 
 @skip_if_github_action

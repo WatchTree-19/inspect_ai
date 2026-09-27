@@ -356,7 +356,14 @@ class MemoryDataset(Dataset):
         if isinstance(target, list):
             return [position_map[answer_index(t)] for t in target]
         else:
-            return position_map[answer_index(target)]
+            # a string may hold several answers ("A,C", "A, C", "AC"), split
+            # the same way the choice scorer reads its target
+            answers: list[str] = []
+            for token in target.replace(",", " ").split():
+                answers.extend([token] if token.isnumeric() else list(token))
+            if len(answers) <= 1:
+                return position_map[answer_index(answers[0] if answers else target)]
+            return ", ".join(position_map[answer_index(a)] for a in answers)
 
     @override
     def sort(
