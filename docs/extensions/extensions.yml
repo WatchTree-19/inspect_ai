@@ -225,6 +225,13 @@
   author: "[SaInT8888888888](https://github.com/SaInT8888888888)"
   categories: ["Analysis"]
 
+- name: "[Inspect Contested](https://github.com/WatchTree-19/inspect-contested)"
+  description: |
+    Scores a model against every human rater when the labels disagree, reporting
+    agreement with the raters and its ceiling alongside accuracy; includes DICES-350.
+  author: "[Sandeep Singh Rai](https://github.com/WatchTree-19)"
+  categories: ["Analysis"]
+
 - name: "[Inspect LogitTilt](https://adrskapars.github.io/inspect_logittilt/)"
   description: |
     Steers a model's sampling towards any target behaviour, surfacing on-policy
